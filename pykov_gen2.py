@@ -31,95 +31,94 @@ def stochastic(self):  # from pykov, modified
         self[k] = self[k] / s[k[0]]
 
 
-f = open(FILE_NAME, "r")
-remove_colon = True   # toggle it off to have result with colons
-if remove_colon:
-    # trying to remove the name of the speaker from the text
-    raw = ""
-    char_buffer = ""
-    for char in f.read():
-        if char.isalnum() or char == "_":
-            char_buffer+=char.lower()
-        else:
-            if char != ":":
-                raw += char_buffer
-                raw += char
-            char_buffer = ""
-else:
-    raw = [ char.lower() for char in f.read()]  
-    raw = "".join(raw)
+def process_file(file_name):
+    f = open(file_name, "r")
+    remove_colon = True   # toggle it off to have result with colons
+    if remove_colon:
+        # trying to remove the name of the speaker from the text
+        raw = ""
+        char_buffer = ""
+        for char in f.read():
+            if char.isalnum() or char == "_":
+                char_buffer+=char.lower()
+            else:
+                if char != ":":
+                    raw += char_buffer
+                    raw += char
+                char_buffer = ""
+    else:
+        raw = [ char.lower() for char in f.read()]
+        raw = "".join(raw)
 
-f.close()
+    f.close()
 
-# "tokenized_sentences" looks like this: [ [ word, word word ], [word, word] ]
-tokenized_sentences = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
-
-
-# adding START and END of sentence tokens
-# TEMPORARY REMOVED
-tokenized_lexica = []  #used in order to filter the input later
-for sent in tokenized_sentences:
-    #tokenized_lexica.append("START")
-    for token in sent:
-        tokenized_lexica.append(token)
-    #tokenized_lexica.append("END")
+    # "tokenized_sentences" looks like this: [ [ word, word word ], [word, word] ]
+    tokenized_sentences = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
 
 
-# creates a list of bigrams (tuples) 
-
-all_bigrams = list(nltk.bigrams(tokenized_lexica))
-
-# making a matrix which calculates probabilities of bigrams in text
-cfdist = nltk.ConditionalFreqDist(all_bigrams)
-matrix_word_word = pykov.Matrix() # essentially a dictionary with two keys and integer value
-for bigram in all_bigrams:
-    matrix_word_word[bigram[0], bigram[1]] = cfdist[bigram[0]][bigram[1]]
-    #print("DEBUG", bigram, matrix_word_word[bigram[0], bigram[1]])
-
-
-# setting a sum of each row equal to 1
-stochastic(matrix_word_word) # overriden pykov function
-
-print("bigrams probabilities test:", matrix_word_word.items())
-
-# making a list of lists [word, tag]
-tagged_word_pairs = nltk.pos_tag(tokenized_lexica)
-# TODO: this line is inefficient, it seems to tag words without taking into account their context. However, might be fast.
-
-# making a matrix which calculates probabilities of [word, tag] pairs
-cfdist = nltk.ConditionalFreqDist(tagged_word_pairs)
-#print cfdist[":"][":"]
-matrix_word_pos = pykov.Matrix()  # first - terminal, second - tag
-
-for pair in tagged_word_pairs:
-    matrix_word_pos[pair[0], pair[1]] = cfdist[pair[0]][pair[1]]
-
-stochastic(matrix_word_pos) # overriden
-
-print("part-of-speech probabilities test:", matrix_word_pos.items())
+    # adding START and END of sentence tokens
+    # TEMPORARY REMOVED
+    tokenized_lexica = []  #used in order to filter the input later
+    for sent in tokenized_sentences:
+        #tokenized_lexica.append("START")
+        for token in sent:
+            tokenized_lexica.append(token)
+        #tokenized_lexica.append("END")
+    return tokenized_lexica
 
 
+def generate_word_word_matrix(tokenized_lexica):
+    # creates a list of bigrams (tuples)
+    all_bigrams = list(nltk.bigrams(tokenized_lexica))
 
-# making a list of tag bigrams [tag, tag]
-only_tags = [pair[1] for pair in tagged_word_pairs]  # we allow only tokenized_lexica here
-tag_bigrams = list(nltk.bigrams(only_tags))
+    # making a matrix which calculates probabilities of bigrams in text
+    cfdist = nltk.ConditionalFreqDist(all_bigrams)
+    matrix_word_word = pykov.Matrix() # essentially a dictionary with two keys and integer value
+    for bigram in all_bigrams:
+        matrix_word_word[bigram[0], bigram[1]] = cfdist[bigram[0]][bigram[1]]
+        #print("DEBUG", bigram, matrix_word_word[bigram[0], bigram[1]])
+
+    # setting a sum of each row equal to 1
+    stochastic(matrix_word_word) # overriden pykov function
+
+    print("bigrams probabilities test:", matrix_word_word.items())
+    return matrix_word_word
 
 
-# making a matrix which calculates probabilities of [tag, tag] pairs
-cfdist = nltk.ConditionalFreqDist(tag_bigrams)
-matrix_pos_pos = pykov.Matrix()
-for bigram in tag_bigrams:
-    matrix_pos_pos[bigram[0], bigram[1]] = cfdist[bigram[0]][bigram[1]]
+def generate_word_pos_matrix(tagged_word_pairs):
+    # making a matrix which calculates probabilities of [word, tag] pairs
+    cfdist = nltk.ConditionalFreqDist(tagged_word_pairs)
+    #print cfdist[":"][":"]
+    matrix_word_pos = pykov.Matrix()  # first - terminal, second - tag
 
-stochastic(matrix_pos_pos) # overriden
+    for pair in tagged_word_pairs:
+        matrix_word_pos[pair[0], pair[1]] = cfdist[pair[0]][pair[1]]
 
-print("tags probabilities test:", matrix_pos_pos.items())
+    stochastic(matrix_word_pos) # overriden
+    print("part-of-speech probabilities test:", matrix_word_pos.items())
+    return matrix_word_pos
 
 
-def generate(tagged_words, length=5):  # tagged_words is a list of lists
-    global matrix_word_word
-    global matrix_word_pos
-    global matrix_pos_pos
+def generate_pos_pos_matrix(tagged_word_pairs):
+    # making a list of tag bigrams [tag, tag]
+    only_tags = [pair[1] for pair in tagged_word_pairs]  # we allow only tokenized_lexica here
+    tag_bigrams = list(nltk.bigrams(only_tags))
+
+    # making a matrix which calculates probabilities of [tag, tag] pairs
+    cfdist = nltk.ConditionalFreqDist(tag_bigrams)
+    matrix_pos_pos = pykov.Matrix()
+    for bigram in tag_bigrams:
+        matrix_pos_pos[bigram[0], bigram[1]] = cfdist[bigram[0]][bigram[1]]
+
+    stochastic(matrix_pos_pos) # overriden
+    print("tags probabilities test:", matrix_pos_pos.items())
+    return matrix_pos_pos
+
+
+def generate(tagged_words, matrices, length=5):  # tagged_words is a list of lists
+    matrix_word_word = matrices[0]
+    matrix_word_pos = matrices[1]
+    matrix_pos_pos = matrices[2]
 
     while length > 0:
         length -= 1
@@ -170,26 +169,43 @@ def generate(tagged_words, length=5):  # tagged_words is a list of lists
                 print pair
                 print ""
         """
-
     return tagged_words
 
 
 def start():
+    lexica = process_file(FILE_NAME)
+
+    tagged_word_pairs = nltk.pos_tag(lexica)
+    # TODO: this line is inefficient, it seems to tag words without taking into account their context. However, might be fast.
+
+    probability_matrices = (generate_word_word_matrix(lexica),
+                            generate_word_pos_matrix(tagged_word_pairs),
+                            generate_pos_pos_matrix(tagged_word_pairs)
+    )
+
     tokenized_user_input = nltk.word_tokenize(input("Write first word(s):").lower())
-    if (tokenized_user_input[-1]) not in tokenized_lexica:
+
+    if (tokenized_user_input[-1]) not in lexica:
         return "Error! Please try a different word - the last word of your sentence is not present in the original text."
     # TODO: the last word of the text will raise an error in case it has no corresponding pair. Needs fixing. Maybe by adding an "END" token.
-    user_input_pair = nltk.pos_tag(tokenized_user_input)
-    number = int(input("How many tokenized_lexica? "))
+    user_input_pairs = nltk.pos_tag(tokenized_user_input)
+    try:
+        number_of_words = int(input("How many words should we generate? "))
+    except ValueError:
+        return "Error! Please make sure to input a number!"
+
     print("Input accepted.")
 
-    generated = generate(user_input_pair, number)
 
-    #generated = generate([("i", "PRP")], 42)
+    output = generate(user_input_pairs, probability_matrices, number_of_words)
 
-    return " ".join([pair[0] for pair in generated])
+    #output = generate([("i", "PRP")], probability_matrices, 42)
 
-print(start())
+    return " ".join([pair[0] for pair in output])
+
+
+if __name__ == "__main__":
+    print(start())
 
 
         
