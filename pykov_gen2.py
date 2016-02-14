@@ -51,23 +51,23 @@ else:
 
 f.close()
 
-# "sents" looks like this: [ [ word, word word ], [word, word] ]
-sents = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
+# "tokenized_sentences" looks like this: [ [ word, word word ], [word, word] ]
+tokenized_sentences = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
 
 
 # adding START and END of sentence tokens
 # TEMPORARY REMOVED
-words = []
-for sent in sents:
-    #words.append("START")
+tokenized_lexica = []  #used in order to filter the input later
+for sent in tokenized_sentences:
+    #tokenized_lexica.append("START")
     for token in sent:
-        words.append(token)
-    #words.append("END")
+        tokenized_lexica.append(token)
+    #tokenized_lexica.append("END")
 
 
 # creates a list of bigrams (tuples) 
 
-all_bigrams = list(nltk.bigrams(words))
+all_bigrams = list(nltk.bigrams(tokenized_lexica))
 
 # making a matrix which calculates probabilities of bigrams in text
 cfdist = nltk.ConditionalFreqDist(all_bigrams)
@@ -78,34 +78,30 @@ for bigram in all_bigrams:
 
 
 # setting a sum of each row equal to 1
-stochastic(matrix_word_word) # overriden
+stochastic(matrix_word_word) # overriden pykov function
 
 print("bigrams probabilities test:", matrix_word_word.items())
 
 # making a list of lists [word, tag]
-
-all_words = [word for sent in sents for word in sent]
-tagged = nltk.pos_tag(all_words)
-
+tagged_word_pairs = nltk.pos_tag(tokenized_lexica)
+# TODO: this line is inefficient, it seems to tag words without taking into account their context. However, might be fast.
 
 # making a matrix which calculates probabilities of [word, tag] pairs
-cfdist = nltk.ConditionalFreqDist(tagged)
+cfdist = nltk.ConditionalFreqDist(tagged_word_pairs)
 #print cfdist[":"][":"]
 matrix_word_pos = pykov.Matrix()  # first - terminal, second - tag
 
-for pair in tagged:
+for pair in tagged_word_pairs:
     matrix_word_pos[pair[0], pair[1]] = cfdist[pair[0]][pair[1]]
 
 stochastic(matrix_word_pos) # overriden
-
-
 
 print("part-of-speech probabilities test:", matrix_word_pos.items())
 
 
 
 # making a list of tag bigrams [tag, tag]
-only_tags = [pair[1] for pair in tagged]  # we allow only words here
+only_tags = [pair[1] for pair in tagged_word_pairs]  # we allow only tokenized_lexica here
 tag_bigrams = list(nltk.bigrams(only_tags))
 
 
@@ -132,7 +128,7 @@ def generate(tagged_words, length=5):  # tagged_words is a list of lists
         output_words = {} # key - word, value - probability
         
         # probability based on bigrams
-        print("DEBUG", word_n_tag, matrix_word_word[word_n_tag[0]])
+        #print("DEBUG", word_n_tag, matrix_word_word[word_n_tag[0]])
         for pair in matrix_word_word.succ(word_n_tag[0]).items(): # [('A', 2), ('B', 6)]
             """
             if pair[0] == "END":
@@ -179,18 +175,21 @@ def generate(tagged_words, length=5):  # tagged_words is a list of lists
 
 
 def start():
-    user_input = input("Write first word(s):").lower()
-    tokenized_user_input = nltk.pos_tag(nltk.word_tokenize(user_input))
-    number = int(input("How many words? "))
+    tokenized_user_input = nltk.word_tokenize(input("Write first word(s):").lower())
+    if (tokenized_user_input[-1]) not in tokenized_lexica:
+        return "Error! Please try a different word - the last word of your sentence is not present in the original text."
+    # TODO: the last word of the text will raise an error in case it has no corresponding pair. Needs fixing. Maybe by adding an "END" token.
+    user_input_pair = nltk.pos_tag(tokenized_user_input)
+    number = int(input("How many tokenized_lexica? "))
     print("Input accepted.")
 
-    generated = generate(tokenized_user_input, number)
+    generated = generate(user_input_pair, number)
 
     #generated = generate([("i", "PRP")], 42)
 
-    print(" ".join([pair[0] for pair in generated]))
+    return " ".join([pair[0] for pair in generated])
 
-start()
+print(start())
 
 
         
