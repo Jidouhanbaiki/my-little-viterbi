@@ -62,13 +62,7 @@ def process_file(file_name):
     # "tokenized_sentences" looks like this: [ [ word, word word ], [word, word] ]
     tokenized_sentences = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
 
-    tokenized_lexica = []
-    for sent in tokenized_sentences:
-        #tokenized_lexica.append("START")  # removed for now for the sake of simplicity
-        for token in sent:
-            tokenized_lexica.append(token)
-        #tokenized_lexica.append("END")  # removed for now for the sake of simplicity
-    return tokenized_lexica
+    return tokenized_sentences
 
 
 def generate_word_word_matrix(tokenized_lexica, isDebug=False):
@@ -201,18 +195,18 @@ def start(file_name, user_sentence, length=10, is_debug=False):
     :param length: how many words should we generate
     :return:
     """
-    lexica = process_file(file_name)
+    sentences = process_file(file_name)
+    lexica = [token for sent in sentences for token in sent]
 
-    tagged_word_pairs = nltk.pos_tag(lexica)
-    # TODO: this line is inefficient, it seems to tag words without taking into account their context. However, might be fast.
+    # tagged_word_pairs = nltk.pos_tag(lexica)  # the shortcut - it's a bit worse, but only a bit
+    tagged_word_pairs = [token for sent in nltk.pos_tag_sents(sentences) for token in sent]   # a list of ['word', 'POS']
 
+    # processing user input
     tokenized_user_input = nltk.word_tokenize(user_sentence)
     user_input_pairs = nltk.pos_tag(tokenized_user_input)
-
     if (tokenized_user_input[-1]) not in lexica:
         return "Error! Please try a different word - the last word of your sentence is not present in the original text."
     # TODO: the last word of the text will raise an error in case it has no corresponding pair. Needs fixing. Maybe by adding an "END" token.
-
     try:
         number_of_words = int(length)
     except ValueError:
