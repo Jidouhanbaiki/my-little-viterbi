@@ -2,9 +2,6 @@ import pykov
 import nltk
 import six
 import random
-import sys
-
-FILE_NAME = "orwell.txt"
 
 
 def stochastic(self):  # from pykov, modified
@@ -37,15 +34,25 @@ def process_file(file_name):
     """
     Process the file with the source text.
     :param file_name:
-    :return: a list of words
+    :return: text as a string
     """
     f = open(file_name, "r")
-    remove_colon = True   # toggle it off to have result with colons
+    raw_text = f.read()
+    f.close()
+    return raw_text
+
+
+def process_raw_text(text, remove_colon=True):
+    """
+    Check text, turn it lowercase and possible remove colons.
+    :param text: text as a string
+    :return: a list of sentences
+    """
     if remove_colon:
         # trying to remove the name of the speaker from the text
         raw = ""
         char_buffer = ""
-        for char in f.read():
+        for char in text:
             if char.isalnum() or char == "_":
                 char_buffer += char.lower()
             else:
@@ -54,18 +61,15 @@ def process_file(file_name):
                     raw += char
                 char_buffer = ""
     else:
-        raw = [char.lower() for char in f.read()]
+        raw = [char.lower() for char in text]
         raw = "".join(raw)
-
-    f.close()
 
     # "tokenized_sentences" looks like this: [ [ word, word word ], [word, word] ]
     tokenized_sentences = [nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(raw)]
-
     return tokenized_sentences
 
 
-def generate_word_word_matrix(tokenized_lexica, isDebug=False):
+def generate_word_word_matrix(tokenized_lexica, is_debug=False):
     """
     Generate a Pykov matrix which calculates probabilities of [word, word] pairs
     :param tokenized_lexica:
@@ -84,13 +88,13 @@ def generate_word_word_matrix(tokenized_lexica, isDebug=False):
     # set a sum of each row equal to 1, matrix values will show probabilities, not frequencies
     stochastic(matrix_word_word)  # overridden pykov function
 
-    if isDebug:
+    if is_debug:
         print("bigrams probabilities test:", matrix_word_word.items())
 
     return matrix_word_word
 
 
-def generate_word_pos_matrix(tagged_word_pairs, isDebug=False):
+def generate_word_pos_matrix(tagged_word_pairs, is_debug=False):
     """
     Generate a Pykov matrix which calculates probabilities of [word, tag] pairs
     :param tagged_word_pairs:
@@ -104,13 +108,13 @@ def generate_word_pos_matrix(tagged_word_pairs, isDebug=False):
 
     stochastic(matrix_word_pos)
 
-    if isDebug:
+    if is_debug:
             print("part-of-speech probabilities test:", matrix_word_pos.items())
 
     return matrix_word_pos
 
 
-def generate_pos_pos_matrix(tagged_word_pairs, isDebug=False):
+def generate_pos_pos_matrix(tagged_word_pairs, is_debug=False):
     """
     Generate a Pykov matrix which calculates probabilities of [tag, tag] pairs
     :param tagged_word_pairs:
@@ -128,7 +132,7 @@ def generate_pos_pos_matrix(tagged_word_pairs, isDebug=False):
 
     stochastic(matrix_pos_pos)  # overridden
 
-    if isDebug:
+    if is_debug:
         print("tags probabilities test:", matrix_pos_pos.items())
 
     return matrix_pos_pos
@@ -187,7 +191,7 @@ def generate(tagged_words, matrices, length=10):  # tagged_words is a list of li
     return tagged_words
 
 
-def start(file_name, user_sentence, length=10, is_debug=False):
+def start(raw_text, user_sentence, length=10, is_debug=False):
     """
     Entry point.
     :param file_name: name of the source text file
@@ -195,7 +199,7 @@ def start(file_name, user_sentence, length=10, is_debug=False):
     :param length: how many words should we generate
     :return:
     """
-    sentences = process_file(file_name)
+    sentences = process_raw_text(raw_text)
     lexica = [token for sent in sentences for token in sent]
 
     # tagged_word_pairs = nltk.pos_tag(lexica)  # the shortcut - it's a bit worse, but only a bit
@@ -225,8 +229,8 @@ def start(file_name, user_sentence, length=10, is_debug=False):
 
 
 if __name__ == "__main__":
-    console_user_input = input("Enter the name of the source plain-text file: "), \
-        input("Write first word(s): ").lower(), \
+    text = process_file(input("Enter the name of the source plain-text file: "))
+    console_user_input = input("Write first word(s): ").lower(), \
         input("How many words should we generate? ")
     print("Input accepted.")
-    print(start(*console_user_input))
+    print(start(text, *console_user_input))
