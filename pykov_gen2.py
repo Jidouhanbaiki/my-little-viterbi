@@ -42,13 +42,13 @@ def process_file(file_name):
     return raw_text
 
 
-def process_raw_text(text, remove_colon=True):
+def process_raw_text(text, remove_colons=True):
     """
-    Check text, turn it lowercase and possible remove colons.
+    Check text, turn it lowercase and possibly remove colons.
     :param text: text as a string
     :return: a list of sentences
     """
-    if remove_colon:
+    if remove_colons:
         # trying to remove the name of the speaker from the text
         raw = ""
         char_buffer = ""
@@ -202,6 +202,17 @@ def start(raw_text, user_sentence, length=10, is_debug=False):
     sentences = process_raw_text(raw_text)
     lexica = [token for sent in sentences for token in sent]
 
+    # When we create the bigrams for our matrices we process the whole text as a single list, without splitting it
+    # into sentences. It causes a bug - if the last word of the list is unique no bigrams will ever start with this
+    # word. There might be a couple of ways to circumvent this error, but in order to avoid any unforeseen issues in
+    # future I simply add the first word of the text into the very end of the text, making sure that all the words are
+    # located both in the left sides and in the right sides of our bigrams. This might slightly spoil our statistics,
+    # however I am slightly randomizing statistics myself in order to get more unique results,
+    # so this should not be an issue.
+    if lexica.index(sentences[-1][-1]) == len(lexica) - 1:
+        lexica.append(lexica[0])
+        sentences[-1].append(lexica[0])
+
     # tagged_word_pairs = nltk.pos_tag(lexica)  # the shortcut - it's a bit worse, but only a bit
     tagged_word_pairs = [token for sent in nltk.pos_tag_sents(sentences) for token in sent]   # a list of ['word', 'POS']
 
@@ -210,7 +221,6 @@ def start(raw_text, user_sentence, length=10, is_debug=False):
     user_input_pairs = nltk.pos_tag(tokenized_user_input)
     if (tokenized_user_input[-1]) not in lexica:
         return "Error! Please try a different word - the last word of your sentence is not present in the original text."
-    # TODO: the last word of the text will raise an error in case it has no corresponding pair. Needs fixing. Maybe by adding an "END" token.
     try:
         number_of_words = int(length)
     except ValueError:
