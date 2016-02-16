@@ -194,7 +194,7 @@ def generate(tagged_words, matrices, length=10):  # tagged_words is a list of li
 def start(raw_text, user_sentence, length=10, is_debug=False):
     """
     Entry point.
-    :param file_name: name of the source text file
+    :param raw_text: the source text as a string
     :param user_sentence: a starting sentence, string, provided by the user
     :param length: how many words should we generate
     :return:
