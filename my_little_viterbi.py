@@ -3,7 +3,7 @@ import nltk
 import six
 import random
 
-_version = "0.01"
+__version__ = "1.0.2"
 
 def stochastic(self):  # from pykov, modified
     """
@@ -200,6 +200,8 @@ def start(raw_text, user_sentence, length=10, is_debug=False):
     :param length: how many words should we generate
     :return:
     """
+    user_sentence = user_sentence.lower()
+
     sentences = process_raw_text(raw_text)
     lexica = [token for sent in sentences for token in sent]
 
@@ -241,7 +243,7 @@ def start(raw_text, user_sentence, length=10, is_debug=False):
 
 if __name__ == "__main__":
     text = process_file(input("Enter the name of the source plain-text file: "))
-    console_user_input = input("Write first word(s): ").lower(), \
+    console_user_input = input("Write first word(s): "), \
         input("How many words should we generate? ")
     print("Input accepted.")
     print(start(text, *console_user_input))

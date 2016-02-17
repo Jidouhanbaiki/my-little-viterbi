@@ -4,16 +4,23 @@ from django.template import loader
 from django.core.urlresolvers import reverse
 
 import my_little_viterbi
-from .forms import InputForm
+from .forms import InputForm, PHRASE_MY_CHOICE
+from .models import Text
 
 
 def index(request):
+
     if request.method == 'POST':
         form = InputForm(request.POST)
         if form.is_valid():
+            if form.cleaned_data['source'] != PHRASE_MY_CHOICE:
+                t = Text.objects.get(title__exact=form.cleaned_data['source'])
+            else:
+                t = Text.objects.get(id=1)
             raw_text = my_little_viterbi.process_file(file_name="orwell.txt")
+            print(t.content[:20])
             output = my_little_viterbi.start(
-                raw_text=raw_text,
+                raw_text=t.content,
                 user_sentence=form.cleaned_data['sentence'],
                 length=form.cleaned_data['length'],
                 is_debug=False)
