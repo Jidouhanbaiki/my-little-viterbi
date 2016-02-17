@@ -13,14 +13,14 @@ def index(request):
     if request.method == 'POST':
         form = InputForm(request.POST)
         if form.is_valid():
-            if form.cleaned_data['source'] != PHRASE_MY_CHOICE:
-                t = Text.objects.get(title__exact=form.cleaned_data['source'])
+            if form.cleaned_data['source'] == PHRASE_MY_CHOICE:
+                raw_text = form.cleaned_data['user_text']
             else:
-                t = Text.objects.get(id=1)
-            raw_text = my_little_viterbi.process_file(file_name="orwell.txt")
-            print(t.content[:20])
+                t = Text.objects.get(title__exact=form.cleaned_data['source'])
+                raw_text = t.content
+                form.cleaned_data['user_text'] = ""
             output = my_little_viterbi.start(
-                raw_text=t.content,
+                raw_text=raw_text,
                 user_sentence=form.cleaned_data['sentence'],
                 length=form.cleaned_data['length'],
                 is_debug=False)
