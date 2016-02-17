@@ -7,6 +7,7 @@ Python 3.5
 * NLTK 3.1
 * Pykov
 * six
+* Django 1.9 (for the web-app of course)
 
 
 ##List of NLTK tools used:
@@ -15,6 +16,4 @@ Python 3.5
 * bigrams() - generates bigrams from a list, nothing fancy though
 * Conditional Frequency Distribution tool ( ConditionalFreqDist() )
 
-##List of Pykov functions used:
-* Matrix() - generates a matrix based on the frequencies of either 
-* Matrix.stochastic() - 
+ 
