@@ -3,6 +3,7 @@ import nltk
 import six
 import random
 
+_version = "0.01"
 
 def stochastic(self):  # from pykov, modified
     """
