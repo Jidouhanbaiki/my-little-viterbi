@@ -1,24 +1,45 @@
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
-      integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<html>
+<head>
+
+
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'viterbi_demo/3.6.6.bootstrap.min.css'%}" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#id_source").change(function() {
+            if ($("#id_source").val() == "Use my own choice") {
+                $("#id_user_text").show();
+                $("label[for='id_user_text']").show();
+                }
+            else { $("#id_user_text").hide(); $("label[for='id_user_text']").hide();}
+
+        });
+    });
+
+</script>
 
       <p></p>
 <div class="row">
     <div class="col-md-6 col-md-offset-3">
-    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-    <form action="{% url 'index' %}" method="post" class="form-horizontal">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Submit" />
-    </form>
+        <form action="{% url 'index' %}" method="post" class="form-horizontal">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit" />
+        </form>
 
 
-    {% if messages %}
-        <p><strong>Output:</strong></p>
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
+        {% if messages %}
+            <p><strong>Output:</strong></p>
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
         {% endif %}
     </div>
 </div>
+</body>
+</html>
