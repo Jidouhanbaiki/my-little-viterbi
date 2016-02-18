@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.core.urlresolvers import reverse
+from django.contrib import messages
+
 
 import my_little_viterbi
 from .forms import InputForm, PHRASE_MY_CHOICE
@@ -24,8 +26,11 @@ def index(request):
                 user_sentence=form.cleaned_data['sentence'],
                 length=form.cleaned_data['length'],
                 is_debug=False)
+            messages.add_message(request, messages.INFO, output)
             form = InputForm(request.POST)
-            return render(request, 'viterbi_demo/index.html', {'output': output, "form": form})
+            #return render(request, 'viterbi_demo/index.html', {'output': output, 'form': form})
+            return HttpResponseRedirect(reverse('index'))
+
     else:
         form = InputForm()
     return render(request, 'viterbi_demo/index.html', {'form': form})
