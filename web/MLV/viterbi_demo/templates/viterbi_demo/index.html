@@ -8,13 +8,30 @@
 </head>
 <body>
 <script type="text/javascript">
+var myOwn = "Use my own text"
     $(document).ready(function() {
+        if ($("#id_source").val() != myOwn)
+        {
+            $("#id_user_text").hide();
+            $("label[for='id_user_text']").hide();
+        }
+
+
         $("#id_source").change(function() {
-            if ($("#id_source").val() == "Use my own choice") {
+            if ($("#id_source").val() == myOwn) {
                 $("#id_user_text").show();
                 $("label[for='id_user_text']").show();
                 }
             else { $("#id_user_text").hide(); $("label[for='id_user_text']").hide();}
+
+        });
+
+        $("#submit_form").click(function() {
+             if ($("#id_source").val() == myOwn || $("#id_user_text").val()) {
+                if ($("#id_user_text") == undefined || $("#id_user_text").val().length < 100) {
+                    alert("Please input your own text or select a different source option! The recommended text length is no less than a page.");
+                }
+             }
 
         });
     });
@@ -29,7 +46,7 @@
         <form action="{% url 'index' %}" method="post" class="form-horizontal">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="submit" value="Submit" />
+            <input id="submit_form" type="submit" value="Submit" />
         </form>
 
 
