@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.core.urlresolvers import reverse
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
+
 
 
 import my_little_viterbi
@@ -33,7 +33,7 @@ def index(request):
     return render(request, 'viterbi_demo/index.html', {'form': form})
 
 
-@csrf_exempt
+
 def ajax(request):
     if request.is_ajax():
         form = InputForm(request.POST)
