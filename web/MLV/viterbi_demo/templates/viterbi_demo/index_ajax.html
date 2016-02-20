@@ -10,6 +10,8 @@
 <script type="text/javascript">
 var myOwn = "Use my own text"
     $(document).ready(function() {
+        $("#output").hide();
+
         if ($("#id_source").val() != myOwn)
         {
             $("#id_user_text").hide();
@@ -27,11 +29,21 @@ var myOwn = "Use my own text"
         });
 
         $("#submit_form").click(function(event) {
+            event.preventDefault();
             if ($("#id_source").val() == myOwn || $("#id_user_text").val()) {
                 if ($("#id_user_text") == undefined || $("#id_user_text").val().length < 100) {
                     $("#output").text("Please input your own text or select a different source option! The recommended text length is no less than a page.");
-                    event.preventDefault();
                 }
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    data: $('#input_form').serialize(),
+                    success: function(result){
+                        $("#output").show();
+                        $("#message").text(result["data"]);
+                    }
+                })
             }
         });
     });
@@ -41,22 +53,18 @@ var myOwn = "Use my own text"
       <p></p>
 <div class="row">
     <div class="col-md-6 col-md-offset-3">
-        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-        <form action="{% url 'index' %}" method="post" class="form-horizontal">
+
+        <form action="" method="post" class="form-horizontal" id="input_form">
             {% csrf_token %}
             {{ form.as_p }}
             <input id="submit_form" type="submit" value="Submit" />
         </form>
 
-        <div id="output"></div>
-        {% if messages %}
+        <div id="output">
             <p><strong>Output:</strong></p>
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-        <p><a href="{% url 'ajax' %}">Try the same form in AJAX!</a></p>
+                <p id="message">{{ message }}</p>
+        </div>
     </div>
 </div>
 </body>
