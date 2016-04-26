@@ -3,7 +3,7 @@ import nltk
 import six
 import random
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 def stochastic(self):  # from pykov, modified
     """
@@ -240,6 +240,7 @@ def start(raw_text, user_sentence, length=10, is_debug=False):
 
     return " ".join([pair[0] for pair in output])
 
+assert len((start(process_file("orwell.txt"), "i", 5)).split(" ")) == 6
 
 if __name__ == "__main__":
     text = process_file(input("Enter the name of the source plain-text file: "))
