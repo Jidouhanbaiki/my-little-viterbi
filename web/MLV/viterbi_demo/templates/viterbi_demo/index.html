@@ -53,17 +53,21 @@ var myOwn = "Use my own text"
 
 
     </div></div>
+
+    {% if messages %}
     <div class="row">
-        <div id="output" class="well"></div>
-        {% if messages %}
+        <div id="output" class="well">
             <p><strong>Output:</strong></p>
             {% for message in messages %}
                 <p>{{ message }}</p>
             {% endfor %}
-        {% endif %}
-        <p><a href="{% url 'ajax' %}">Try the same form in AJAX!</a></p>
 
+        </div>
     </div>
+    {% endif %}
+    <p><a href="{% url 'ajax' %}">Try the same form in AJAX!</a></p>
+
+
 </div>
 </body>
 </html>
