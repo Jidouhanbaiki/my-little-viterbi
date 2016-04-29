@@ -1,11 +1,6 @@
-<html>
-<head>
 
+{% include "viterbi_demo/header.html"%}
 
-    {% load staticfiles %}
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js"></script>
-</head>
 <body>
 <script type="text/javascript">
 var myOwn = "Use my own text"
@@ -40,7 +35,10 @@ var myOwn = "Use my own text"
 
 
 <div class="container">
-    <div class="row" style="height:8em"></div>
+    <div class="jumbotron" style="padding-top:2em">
+        <h1>Viterbi Algorithm Demo</h1>
+        <h2>Simply fill out the form below</h2>
+    </div>
     <div class="row">
     <div class="col-md-4 col-md-offset-4">
         {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
@@ -55,7 +53,7 @@ var myOwn = "Use my own text"
     </div></div>
 
     {% if messages %}
-    <div class="row">
+    <div class="row"  style="padding:1em">
         <div id="output" class="well">
             <p><strong>Output:</strong></p>
             {% for message in messages %}
